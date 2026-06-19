@@ -2,6 +2,20 @@
 
 基於 [富途 OpenAPI](https://openapi.futunn.com/futu-api-doc/hk/intro/intro.html) 的 Python 自動交易平台，整合官方 Skills 與完整 API 文檔。
 
+## 模擬程式交易系統 (Paper Trading)
+
+獨立 OOP 模組，串接 **Binance 真實報價**（或 Mock），在本地模擬帳戶執行策略。
+
+詳細架構見 [docs/PAPER_TRADING.md](docs/PAPER_TRADING.md)
+
+```bash
+# 演示（Mock，約 2 分鐘）
+PAPER_DEMO=1 PAPER_DATA_PROVIDER=mock python main.py
+
+# 24 小時 Binance 真實報價模擬
+PAPER_DATA_PROVIDER=binance python main.py
+```
+
 ## 功能
 
 - **雙環境並存**：同一介面同時查看/操作 **模擬 (SIMULATE)** 與 **實盤 (REAL)**
