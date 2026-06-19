@@ -1,0 +1,91 @@
+:root {
+  --bg: #0b0f14;
+  --card: #151c27;
+  --text: #e8edf5;
+  --muted: #8fa0b8;
+  --accent: #4d9dff;
+  --sim: #2ecc87;
+  --sim-bg: rgba(46, 204, 135, 0.08);
+  --real: #ff6b6b;
+  --real-bg: rgba(255, 107, 107, 0.08);
+  --border: #243044;
+  font-family: "SF Pro Text", "PingFang HK", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+header {
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, #121923, var(--bg));
+}
+.brand h1 { margin: 0; font-size: 1.35rem; }
+.subtitle { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.85rem; }
+.header-actions { display: flex; gap: 0.75rem; align-items: center; }
+
+.badge { padding: 0.35rem 0.75rem; border-radius: 999px; background: #243044; font-size: 0.85rem; white-space: nowrap; }
+.badge.ok { background: var(--sim-bg); color: var(--sim); border: 1px solid rgba(46,204,135,.25); }
+.badge.warn { background: var(--real-bg); color: #ffb020; border: 1px solid rgba(255,176,32,.25); }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; }
+.card.wide { margin: 0 1.5rem 1.5rem; }
+.quote-bar { margin: 1rem 1.5rem 0; }
+
+h2 { margin: 0 0 0.75rem; font-size: 1rem; color: var(--muted); font-weight: 600; }
+h3 { margin: 1rem 0 0.5rem; font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+
+.dual-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  padding: 1rem 1.5rem;
+}
+@media (max-width: 960px) { .dual-grid { grid-template-columns: 1fr; } }
+
+.env-panel {
+  border-radius: 14px; padding: 1rem 1.1rem 1.25rem;
+  border: 1px solid var(--border); background: var(--card);
+}
+.env-panel.simulate { border-color: rgba(46,204,135,.35); box-shadow: inset 0 0 0 1px var(--sim-bg); }
+.env-panel.real { border-color: rgba(255,107,107,.35); box-shadow: inset 0 0 0 1px var(--real-bg); }
+
+.panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.panel-head h2 { margin: 0; color: var(--text); font-size: 1.1rem; }
+.env-tag { font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 6px; background: var(--sim-bg); color: var(--sim); }
+.env-tag.danger { background: var(--real-bg); color: var(--real); }
+.real-warning { margin: 0 0 0.75rem; font-size: 0.82rem; color: #ffb4b4; line-height: 1.4; }
+
+.summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.5rem; }
+.summary-card {
+  background: #0d1219; border: 1px solid var(--border); border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+}
+.summary-card .label { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.2rem; }
+.summary-card .value { font-size: 0.95rem; font-weight: 600; }
+
+.row, .form, .order-form { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; align-items: center; }
+input, select, button {
+  background: #0d1219; color: var(--text); border: 1px solid #334155;
+  border-radius: 8px; padding: 0.5rem 0.65rem; font-size: 0.9rem;
+}
+button { background: var(--accent); border: none; cursor: pointer; font-weight: 600; }
+button.secondary { background: #243044; }
+button.danger-btn { background: #c0392b; }
+.confirm-check { font-size: 0.85rem; color: #ffb4b4; display: flex; align-items: center; gap: 0.35rem; }
+
+.table-wrap { overflow: auto; max-height: 220px; border-radius: 10px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+th, td { padding: 0.45rem 0.55rem; text-align: left; border-bottom: 1px solid #1e293b; white-space: nowrap; }
+th { position: sticky; top: 0; background: #111827; color: var(--muted); font-weight: 600; }
+tr:hover td { background: rgba(255,255,255,.02); }
+.empty { padding: 1rem; color: var(--muted); font-size: 0.85rem; }
+.error-box { padding: 0.75rem; color: #ffb4b4; font-size: 0.85rem; background: var(--real-bg); border-radius: 8px; margin-bottom: 0.5rem; }
+
+.result, pre.result {
+  background: #0a0e13; border-radius: 8px; padding: 0.75rem;
+  overflow: auto; max-height: 180px; font-size: 0.78rem; color: #cbd5e1;
+  border: 1px solid var(--border); margin: 0.5rem 0 0;
+}
+.strategy-section { margin-top: 0; }
+
+.side-buy { color: var(--sim); font-weight: 600; }
+.side-sell { color: var(--real); font-weight: 600; }

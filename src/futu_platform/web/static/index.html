@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Futu 交易平台</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>Futu 交易平台</h1>
+      <p class="subtitle">模擬與實盤並存 · 同一 OpenD 連線</p>
+    </div>
+    <div class="header-actions">
+      <div id="health" class="badge">檢查中…</div>
+      <button class="secondary" onclick="refreshAll()">全部刷新</button>
+    </div>
+  </header>
+
+  <section class="quote-bar card">
+    <h2>行情快照</h2>
+    <div class="row">
+      <input id="quote-codes" value="HK.00700,US.AAPL" />
+      <button onclick="loadSnapshot()">查詢</button>
+    </div>
+    <div id="snapshot-table" class="table-wrap"></div>
+  </section>
+
+  <div class="dual-grid">
+    <section class="env-panel simulate" id="panel-simulate">
+      <div class="panel-head">
+        <h2>模擬交易</h2>
+        <span class="env-tag">SIMULATE</span>
+      </div>
+      <div id="sim-summary" class="summary-cards"></div>
+      <h3>持倉</h3>
+      <div id="sim-portfolio" class="table-wrap"></div>
+      <h3>今日訂單</h3>
+      <div id="sim-orders" class="table-wrap"></div>
+      <h3>快速下單</h3>
+      <form class="order-form" onsubmit="return submitOrder(event, 'SIMULATE')">
+        <input name="code" value="HK.00700" required />
+        <select name="side"><option value="BUY">買入</option><option value="SELL">賣出</option></select>
+        <input name="quantity" type="number" value="100" min="1" required />
+        <select name="order_type"><option value="MARKET">市價</option><option value="NORMAL">限價</option></select>
+        <input name="price" type="number" step="0.01" placeholder="限價" />
+        <button type="submit">模擬下單</button>
+      </form>
+      <pre id="sim-order-result" class="result"></pre>
+    </section>
+
+    <section class="env-panel real" id="panel-real">
+      <div class="panel-head">
+        <h2>實盤交易</h2>
+        <span class="env-tag danger">REAL</span>
+      </div>
+      <p class="real-warning">實盤涉及真實資金。請先在 OpenD 解鎖交易，下單前需勾選確認。</p>
+      <div id="real-summary" class="summary-cards"></div>
+      <h3>持倉</h3>
+      <div id="real-portfolio" class="table-wrap"></div>
+      <h3>今日訂單</h3>
+      <div id="real-orders" class="table-wrap"></div>
+      <h3>快速下單</h3>
+      <form class="order-form" onsubmit="return submitOrder(event, 'REAL')">
+        <input name="code" value="HK.00700" required />
+        <select name="side"><option value="BUY">買入</option><option value="SELL">賣出</option></select>
+        <input name="quantity" type="number" value="100" min="1" required />
+        <select name="order_type"><option value="MARKET">市價</option><option value="NORMAL">限價</option></select>
+        <input name="price" type="number" step="0.01" placeholder="限價" />
+        <label class="confirm-check"><input type="checkbox" name="confirmed" /> 我確認實盤下單</label>
+        <button type="submit" class="danger-btn">實盤下單</button>
+      </form>
+      <pre id="real-order-result" class="result"></pre>
+    </section>
+  </div>
+
+  <section class="card wide strategy-section">
+    <h2>策略執行</h2>
+    <div class="form">
+      <select id="strategy-name"></select>
+      <select id="strategy-env">
+        <option value="SIMULATE">模擬</option>
+        <option value="REAL">實盤</option>
+      </select>
+      <input id="strategy-code" value="HK.00700" />
+      <input id="strategy-qty" type="number" value="100" />
+      <label><input type="checkbox" id="strategy-auto" /> 自動下單</label>
+      <label id="strategy-confirm-wrap" style="display:none">
+        <input type="checkbox" id="strategy-confirmed" /> 實盤確認
+      </label>
+      <button onclick="runStrategy()">執行一次</button>
+    </div>
+    <pre id="strategy-out" class="result">—</pre>
+  </section>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

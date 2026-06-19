@@ -1,0 +1,32 @@
+# 模擬交易系統配置（複製為 config.yaml 後修改）
+
+data:
+  provider: binance          # binance | mock
+  symbol: BTCUSDT
+  interval: 1m               # K 線週期
+  poll_interval_seconds: 60  # 數據輪詢間隔
+  kline_limit: 200
+  binance_base_url: https://api.binance.com
+
+strategy:
+  name: ma_cross
+  fast_period: 5
+  slow_period: 20
+
+portfolio:
+  initial_cash: 100000.0
+  base_currency: USDT
+  commission_rate: 0.001       # 0.1% 手續費
+  slippage_rate: 0.0005        # 0.05% 滑點
+  max_position_pct: 0.95       # 單次最多使用 95% 資金
+
+execution:
+  order_type: market
+  min_order_qty: 0.0001
+
+runtime:
+  run_duration_hours: 24
+  demo_duration_seconds: 120   # 演示模式（環境變數 PAPER_DEMO=1 時使用）
+  log_level: INFO
+  data_dir: data/paper_trading
+  db_filename: paper_trading.db

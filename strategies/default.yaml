@@ -1,0 +1,17 @@
+# 策略配置範例
+# 可透過 Web API /api/strategy/schedule 或 CLI 啟動
+
+jobs:
+  - id: ma_tencent
+    strategy: ma_cross
+    code: HK.00700
+    interval_seconds: 300
+    quantity: 100
+    auto_trade: false
+
+  - id: rsi_apple
+    strategy: rsi
+    code: US.AAPL
+    interval_seconds: 600
+    quantity: 10
+    auto_trade: false
