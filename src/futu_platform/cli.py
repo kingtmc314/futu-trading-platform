@@ -6,14 +6,7 @@ import argparse
 import json
 import sys
 
-import uvicorn
-
-from .client import FutuClient
-from .config import get_settings
-from .desktop import run_desktop
-from .quote_service import QuoteService
-from .strategy import create_engine
-from .trade_service import OrderRequest, TradeService, normalize_trd_env
+from .world_monitor import WorldMonitorService
 
 
 def _print(data: object) -> None:
@@ -21,6 +14,9 @@ def _print(data: object) -> None:
 
 
 def cmd_health(_: argparse.Namespace) -> None:
+    from .client import FutuClient
+    from .config import get_settings
+
     try:
         FutuClient().check_opend()
         _print({"status": "ok", "opend": "connected", **get_settings().model_dump()})
@@ -30,25 +26,35 @@ def cmd_health(_: argparse.Namespace) -> None:
 
 
 def cmd_overview(_: argparse.Namespace) -> None:
+    from .trade_service import TradeService
+
     _print(TradeService().overview())
 
 
 def cmd_snapshot(args: argparse.Namespace) -> None:
+    from .quote_service import QuoteService
+
     data = QuoteService().snapshot(args.codes.split(","))
     _print({"data": data})
 
 
 def cmd_kline(args: argparse.Namespace) -> None:
+    from .quote_service import QuoteService
+
     data = QuoteService().kline(args.code, ktype=args.ktype, count=args.count)
     _print({"data": data})
 
 
 def cmd_portfolio(args: argparse.Namespace) -> None:
+    from .trade_service import TradeService, normalize_trd_env
+
     env = normalize_trd_env(args.trd_env)
     _print({"trd_env": env, "data": TradeService().portfolio(args.code, trd_env=env)})
 
 
 def cmd_order(args: argparse.Namespace) -> None:
+    from .trade_service import OrderRequest, TradeService, normalize_trd_env
+
     result = TradeService().place_order(
         OrderRequest(
             code=args.code,
@@ -64,6 +70,8 @@ def cmd_order(args: argparse.Namespace) -> None:
 
 
 def cmd_strategy(args: argparse.Namespace) -> None:
+    from .strategy import create_engine
+
     engine = create_engine()
     result = engine.run_once(
         args.name,
@@ -77,6 +85,10 @@ def cmd_strategy(args: argparse.Namespace) -> None:
 
 
 def cmd_serve(args: argparse.Namespace) -> None:
+    import uvicorn
+
+    from .config import get_settings
+
     settings = get_settings()
     uvicorn.run(
         "futu_platform.web.app:app",
@@ -87,7 +99,21 @@ def cmd_serve(args: argparse.Namespace) -> None:
 
 
 def cmd_desktop(args: argparse.Namespace) -> None:
+    from .desktop import run_desktop
+
     run_desktop(host=args.host, port=args.port)
+
+
+def cmd_world_monitor(args: argparse.Namespace) -> None:
+    service = WorldMonitorService()
+    if args.action in {"once", "run"}:
+        _print(service.run_once(auto_trade=False))
+    else:
+        _print(service.overview())
+
+
+def cmd_world_monitor_once(_: argparse.Namespace) -> None:
+    _print(WorldMonitorService().run_once(auto_trade=False))
 
 
 def main() -> None:
@@ -140,6 +166,14 @@ def main() -> None:
     p.add_argument("--host")
     p.add_argument("--port", type=int)
     p.set_defaults(func=cmd_desktop)
+
+    p = sub.add_parser("world-monitor", help="World Monitor 財經/政策事件監控")
+    p.add_argument("action", choices=["overview", "once", "run"])
+    p.set_defaults(func=cmd_world_monitor)
+
+    sub.add_parser("world-monitor-once", help="執行一次 World Monitor（只記錄，不下單）").set_defaults(
+        func=cmd_world_monitor_once
+    )
 
     args = parser.parse_args()
     args.func(args)

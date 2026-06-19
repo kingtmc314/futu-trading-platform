@@ -176,6 +176,8 @@ tr:hover td { background: rgba(77,157,255,.04); }
 .chart-card canvas { width: 100%; display: block; border-radius: 10px; }
 .paper-grid, .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
 .strategy-card { max-width: 1180px; }
+.world-monitor-section .summary-card .value { font-size: .92rem; word-break: break-word; }
+.wm-runs-card { margin-top: 1rem; }
 
 .side-buy, .signal-buy, .pnl-pos { color: var(--sim); font-weight: 750; }
 .side-sell, .signal-sell, .pnl-neg { color: var(--real); font-weight: 750; }

@@ -412,11 +412,111 @@ async function refreshPaperTrading() {
   }
 }
 
+function renderWorldMonitor(payload) {
+  const data = payload.data || payload;
+  const cfg = data.config || data;
+  const runner = data.runner || {};
+  const latestRun = data.latest || (data.runs || [])[0] || {};
+  const recommendations = latestRun.recommendations || [];
+  const primary = recommendations[0] || {};
+  const running = !!(runner.running || data.running);
+  const badge = document.getElementById("wm-runner-badge");
+  badge.textContent = running ? "每小時監控中" : "已停止";
+  badge.className = "badge " + (running ? "ok" : "warn");
+
+  const action = primary.signal || "—";
+  const cls = action === "BUY" ? "world-impact-positive" : action === "SELL" ? "world-impact-negative" : "world-impact-neutral";
+  const cards = [
+    { label: "狀態", value: running ? "Running" : "Stopped" },
+    { label: "最新信號", value: `<span class="${cls}">${action}</span>` },
+    { label: "總分", value: latestRun.score != null ? Number(latestRun.score).toFixed(2) : "—" },
+    { label: "信心", value: primary.confidence != null ? `${(Number(primary.confidence) * 100).toFixed(0)}%` : "—" },
+    { label: "監控標的", value: (cfg.symbols || []).join(", ") || "—" },
+    { label: "自動下單", value: cfg.auto_trade ? "ON" : "OFF" },
+    { label: "交易環境", value: cfg.trd_env || "SIMULATE" },
+    { label: "週期", value: `${cfg.interval_seconds || 3600}s` },
+  ];
+  document.getElementById("wm-summary").innerHTML = cards.map((c) => `
+    <div class="summary-card"><div class="label">${c.label}</div><div class="value">${c.value}</div></div>
+  `).join("");
+
+  renderTable("wm-events", data.events || [], [
+    { key: "fetched_at", label: "擷取時間" },
+    { key: "category", label: "類別" },
+    { key: "source", label: "來源" },
+    { key: "impact", label: "影響", format: (v) => v != null ? Number(v).toFixed(2) : "—" },
+    { key: "title", label: "事件" },
+  ], "尚無事件，請點立即掃描");
+
+  const signalRows = (data.runs || []).flatMap((run) => (run.recommendations || []).map((rec) => ({
+    timestamp: run.completed_at,
+    symbol: rec.symbol,
+    action: rec.signal,
+    score: rec.score,
+    confidence: rec.confidence,
+    reason: rec.reason,
+  })));
+  renderTable("wm-recommendations", signalRows, [
+    { key: "timestamp", label: "時間" },
+    { key: "symbol", label: "標的" },
+    {
+      key: "action",
+      label: "信號",
+      format: (v) => {
+        const a = String(v || "");
+        const c = a === "BUY" ? "world-impact-positive" : a === "SELL" ? "world-impact-negative" : "world-impact-neutral";
+        return `<span class="${c}">${a}</span>`;
+      },
+    },
+    { key: "score", label: "分數", format: (v) => v != null ? Number(v).toFixed(2) : "—" },
+    { key: "confidence", label: "信心", format: (v) => v != null ? `${(Number(v) * 100).toFixed(0)}%` : "—" },
+    { key: "reason", label: "原因" },
+  ], "尚無信號");
+
+  const executionRows = (data.runs || []).flatMap((run) => (run.recommendations || []).map((rec) => ({
+    timestamp: rec.generated_at || run.completed_at,
+    symbol: rec.symbol,
+    action: rec.signal,
+    status: (rec.order || {}).status || (rec.order || {}).mode || "record_only",
+    message: (rec.order || {}).message || (rec.order || {}).reason || "—",
+  })));
+  renderTable("wm-runs", executionRows, [
+    { key: "timestamp", label: "時間" },
+    { key: "symbol", label: "標的" },
+    { key: "action", label: "動作" },
+    { key: "status", label: "狀態" },
+    { key: "message", label: "訊息" },
+  ], "尚無執行紀錄");
+}
+
+async function refreshWorldMonitor() {
+  try {
+    const { data } = await api("/api/world-monitor/overview");
+    renderWorldMonitor(data);
+  } catch (e) {
+    document.getElementById("wm-summary").innerHTML =
+      `<div class="error-box">無法載入 World Monitor：${e.message}</div>`;
+  }
+}
+
+async function runWorldMonitor() {
+  const latest = document.getElementById("wm-latest-run");
+  latest.textContent = "執行中…";
+  try {
+    const { data } = await api("/api/world-monitor/run-once", { method: "POST" });
+    latest.textContent = JSON.stringify(data, null, 2);
+    await refreshWorldMonitor();
+  } catch (e) {
+    latest.textContent = e.message;
+  }
+}
+
 async function refreshAll() {
   await refreshHealth();
   await refreshOverview();
   await refreshRiskConfig();
   await refreshPaperTrading();
+  await refreshWorldMonitor();
   await loadSnapshot();
 }
 
@@ -496,6 +596,7 @@ loadStrategies();
 setInterval(refreshHealth, 20000);
 setInterval(refreshOverview, 45000);
 setInterval(refreshPaperTrading, 15000);
+setInterval(refreshWorldMonitor, 60000);
 
 
 function activateSection(sectionId) {
@@ -507,6 +608,9 @@ function activateSection(sectionId) {
   });
   if (sectionId === 'paper-trading-section') {
     setTimeout(refreshPaperTrading, 50);
+  }
+  if (sectionId === 'world-monitor-section') {
+    setTimeout(refreshWorldMonitor, 50);
   }
 }
 

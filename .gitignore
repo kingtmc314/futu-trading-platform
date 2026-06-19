@@ -10,4 +10,5 @@ build/
 .tools/
 data/logs/
 data/paper_trading/
+data/world_monitor/
 *.log

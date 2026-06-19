@@ -20,7 +20,8 @@
         <button class="nav-item active" data-section="overview-section"><span>01</span>總覽</button>
         <button class="nav-item" data-section="trade-section"><span>02</span>交易</button>
         <button class="nav-item" data-section="paper-trading-section"><span>03</span>程式模擬</button>
-        <button class="nav-item" data-section="strategy-section"><span>04</span>策略</button>
+        <button class="nav-item" data-section="world-monitor-section"><span>04</span>World Monitor</button>
+        <button class="nav-item" data-section="strategy-section"><span>05</span>策略</button>
       </nav>
       <div class="sidebar-card">
         <div class="sidebar-card-label">OpenD</div>
@@ -192,6 +193,33 @@
           </div>
           <pre id="strategy-out" class="result">—</pre>
         </div>
+      </section>
+
+      <section class="workspace-section world-monitor-section" id="world-monitor-section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">World Monitor</p>
+            <h3>財經 / 政策異動監控</h3>
+            <p class="paper-subtitle">每小時評分並產生 BUY / SELL / HOLD 建議；預設只記錄不下單</p>
+          </div>
+          <div class="paper-head-actions">
+            <span id="wm-runner-badge" class="badge">—</span>
+            <button onclick="runWorldMonitor()">立即執行</button>
+          </div>
+        </div>
+        <div id="wm-summary" class="summary-cards paper-summary"></div>
+        <div class="paper-grid data-grid">
+          <div class="pro-card">
+            <h3>最新建議</h3>
+            <div id="wm-recommendations" class="table-wrap"></div>
+          </div>
+          <div class="pro-card">
+            <h3>最近執行</h3>
+            <pre id="wm-latest-run" class="result">—</pre>
+          </div>
+        </div>
+        <div class="pro-card"><h3>重大事件</h3><div id="wm-events" class="table-wrap tall"></div></div>
+        <div class="pro-card wm-runs-card"><h3>執行紀錄</h3><div id="wm-runs" class="table-wrap"></div></div>
       </section>
     </main>
   </div>

@@ -16,6 +16,7 @@ from ..paper_trading_service import PaperTradingService
 from ..quote_service import QuoteService
 from ..runner import StrategyRunner
 from ..strategy import create_engine
+from ..world_monitor import WorldMonitorRunner, WorldMonitorService
 from ..trade_service import OrderRequest, TradeService, normalize_trd_env
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -28,6 +29,8 @@ trade_service = TradeService()
 paper_trading_service = PaperTradingService()
 strategy_engine = create_engine()
 strategy_runner = StrategyRunner()
+world_monitor_service = WorldMonitorService(trade_service=trade_service)
+world_monitor_runner = WorldMonitorRunner(world_monitor_service)
 
 
 class OrderBody(BaseModel):
@@ -57,6 +60,16 @@ class ScheduleBody(BaseModel):
     auto_trade: bool = False
     confirmed: bool = False
     trd_env: Literal["SIMULATE", "REAL"] = "SIMULATE"
+
+
+@app.on_event("startup")
+def startup_jobs() -> None:
+    world_monitor_runner.start()
+
+
+@app.on_event("shutdown")
+def shutdown_jobs() -> None:
+    world_monitor_runner.stop()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -298,6 +311,78 @@ def api_paper_status() -> dict:
 def api_paper_charts(limit: int = Query(500, ge=10, le=2000)) -> dict:
     try:
         return {"data": paper_trading_service.chart_data(limit=limit)}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/world-monitor/overview")
+def api_world_monitor_overview() -> dict:
+    try:
+        data = world_monitor_service.overview()
+        data["runner"] = world_monitor_runner.status()
+        return {"data": data}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/world-monitor/status")
+def api_world_monitor_status() -> dict:
+    try:
+        data = world_monitor_service.overview()
+        return {
+            "data": {
+                "enabled": data["enabled"],
+                "auto_trade": data["auto_trade"],
+                "interval_seconds": data["interval_seconds"],
+                "trd_env": data["trd_env"],
+                "symbols": data["symbols"],
+                "db_path": data["db_path"],
+                "latest": data["latest"],
+                "runner": world_monitor_runner.status(),
+            }
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/world-monitor/events")
+def api_world_monitor_events(limit: int = Query(50, ge=1, le=500)) -> dict:
+    try:
+        return {"data": world_monitor_service.store.events(limit=limit)}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/world-monitor/run")
+def api_world_monitor_run() -> dict:
+    try:
+        return {"data": world_monitor_service.run_once()}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/world-monitor/run-once")
+def api_world_monitor_run_once() -> dict:
+    try:
+        return {"data": world_monitor_service.run_once(auto_trade=False)}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/world-monitor/start")
+def api_world_monitor_start() -> dict:
+    try:
+        world_monitor_runner.start()
+        return {"data": world_monitor_runner.status()}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/world-monitor/stop")
+def api_world_monitor_stop() -> dict:
+    try:
+        world_monitor_runner.stop()
+        return {"data": world_monitor_runner.status()}
     except Exception as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
