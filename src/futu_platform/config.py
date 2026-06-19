@@ -23,6 +23,13 @@ class Settings(BaseSettings):
     web_host: str = "127.0.0.1"
     web_port: int = 8080
 
+    # 實盤風控：預設不允許實盤下單，必須在 .env 明確開啟。
+    futu_real_trading_enabled: bool = False
+    futu_real_max_order_value: float = 10000.0
+    futu_real_max_quantity: int = 1000
+    futu_real_allowed_prefixes: str = "HK,US"
+    futu_real_market_order_allowed: bool = False
+
     @property
     def is_simulate(self) -> bool:
         return self.futu_trd_env.upper() != "REAL"

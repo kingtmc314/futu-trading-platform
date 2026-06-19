@@ -53,6 +53,19 @@ h3 { margin: 1rem 0 0.5rem; font-size: 0.85rem; color: var(--muted); font-weight
 .env-tag { font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 6px; background: var(--sim-bg); color: var(--sim); }
 .env-tag.danger { background: var(--real-bg); color: var(--real); }
 .real-warning { margin: 0 0 0.75rem; font-size: 0.82rem; color: #ffb4b4; line-height: 1.4; }
+.risk-box {
+  background: #0d1219;
+  border: 1px solid rgba(255, 107, 107, 0.28);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.82rem;
+}
+.risk-row { display: flex; align-items: center; gap: 0.45rem; margin-bottom: 0.35rem; }
+.risk-dot { width: 0.6rem; height: 0.6rem; border-radius: 999px; display: inline-block; }
+.risk-dot.enabled { background: var(--sim); box-shadow: 0 0 0 4px var(--sim-bg); }
+.risk-dot.disabled { background: var(--real); box-shadow: 0 0 0 4px var(--real-bg); }
+.risk-details { color: var(--muted); line-height: 1.4; }
 
 .summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.5rem; }
 .summary-card {

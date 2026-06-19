@@ -86,6 +86,11 @@ def api_overview() -> dict:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
+@app.get("/api/risk/config")
+def api_risk_config() -> dict:
+    return {"data": trade_service.risk_summary()}
+
+
 @app.get("/api/quote/snapshot")
 def api_snapshot(codes: str) -> dict:
     code_list = [c.strip() for c in codes.split(",") if c.strip()]

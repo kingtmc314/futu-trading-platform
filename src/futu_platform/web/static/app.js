@@ -92,6 +92,24 @@ async function refreshOverview() {
   renderEnvPanel("real", overview.REAL);
 }
 
+async function refreshRiskConfig() {
+  const { data } = await api("/api/risk/config");
+  const enabled = data.real_trading_enabled;
+  const el = document.getElementById("risk-summary");
+  el.innerHTML = `
+    <div class="risk-row">
+      <span class="risk-dot ${enabled ? "enabled" : "disabled"}"></span>
+      <strong>${enabled ? "實盤下單已開啟" : "實盤下單已關閉"}</strong>
+    </div>
+    <div class="risk-details">
+      單筆金額上限：${fmtNum(data.real_max_order_value)} ·
+      數量上限：${data.real_max_quantity} ·
+      允許市場：${(data.real_allowed_prefixes || []).join(", ")} ·
+      市價單：${data.real_market_order_allowed ? "允許" : "不允許"}
+    </div>
+  `;
+}
+
 function fmtPnl(v) {
   if (v == null || v === "" || Number.isNaN(Number(v))) return "—";
   const n = Number(v);
@@ -212,6 +230,7 @@ async function refreshPaperTrading() {
 async function refreshAll() {
   await refreshHealth();
   await refreshOverview();
+  await refreshRiskConfig();
   await refreshPaperTrading();
   await loadSnapshot();
 }
