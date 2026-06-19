@@ -88,6 +88,28 @@
       </div>
     </div>
     <div id="paper-summary" class="summary-cards paper-summary"></div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">
+          <span>價格走勢 + 信號/成交</span>
+          <span class="chart-legend">
+            <i class="legend-dot buy"></i>BUY
+            <i class="legend-dot sell"></i>SELL
+          </span>
+        </div>
+        <canvas id="paper-price-chart" height="260"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">
+          <span>淨值 / PnL 曲線</span>
+          <span class="chart-legend">
+            <i class="legend-line equity"></i>Equity
+            <i class="legend-line pnl"></i>PnL
+          </span>
+        </div>
+        <canvas id="paper-equity-chart" height="260"></canvas>
+      </div>
+    </div>
     <div class="paper-grid">
       <div>
         <h3>持倉</h3>

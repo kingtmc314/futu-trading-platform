@@ -56,3 +56,6 @@ class PaperTradingService:
 
     def status(self) -> Dict[str, Any]:
         return self._repo.get_run_status(self._config_summary()).to_dict()
+
+    def chart_data(self, limit: int = 500) -> Dict[str, Any]:
+        return self._repo.get_chart_data(limit=limit)

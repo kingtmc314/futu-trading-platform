@@ -198,6 +198,44 @@ class PaperTradingRepository:
             config=config_summary,
         )
 
+    def get_equity_curve(self, limit: int = 500) -> List[Dict[str, Any]]:
+        if not self.db_exists():
+            return []
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT timestamp, cash, equity, unrealized_pnl, realized_pnl
+                FROM portfolio_snapshots
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+        return list(reversed([_row_to_dict(r) for r in rows]))
+
+    def get_market_bars(self, limit: int = 500) -> List[Dict[str, Any]]:
+        if not self.db_exists():
+            return []
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT symbol, timestamp, open, high, low, close, volume
+                FROM market_bars
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+        return list(reversed([_row_to_dict(r) for r in rows]))
+
+    def get_chart_data(self, limit: int = 500) -> Dict[str, Any]:
+        return {
+            "equity_curve": self.get_equity_curve(limit=limit),
+            "market_bars": self.get_market_bars(limit=limit),
+            "signals": list(reversed(self.get_signals(limit=min(limit, 200)))),
+            "fills": list(reversed(self.get_fills(limit=min(limit, 200)))),
+        }
+
     def overview(self, initial_cash: float, config_summary: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "status": self.get_run_status(config_summary).to_dict(),
@@ -205,4 +243,5 @@ class PaperTradingRepository:
             "snapshot": self.get_latest_snapshot(),
             "fills": self.get_fills(),
             "signals": self.get_signals(),
+            "charts": self.get_chart_data(limit=500),
         }

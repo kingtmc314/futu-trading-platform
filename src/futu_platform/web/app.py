@@ -294,5 +294,13 @@ def api_paper_status() -> dict:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
+@app.get("/api/paper-trading/charts")
+def api_paper_charts(limit: int = Query(500, ge=10, le=2000)) -> dict:
+    try:
+        return {"data": paper_trading_service.chart_data(limit=limit)}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
 def create_app() -> FastAPI:
     return app

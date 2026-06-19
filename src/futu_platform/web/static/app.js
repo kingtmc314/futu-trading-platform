@@ -124,10 +124,191 @@ function fmtPct(v) {
   return `<span class="${cls}">${n >= 0 ? "+" : ""}${n.toFixed(2)}%</span>`;
 }
 
+function setupCanvas(canvas) {
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const width = Math.max(320, rect.width || canvas.parentElement.clientWidth || 600);
+  const height = Number(canvas.getAttribute("height")) || 260;
+  canvas.width = width * ratio;
+  canvas.height = height * ratio;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  return { ctx, width, height };
+}
+
+function drawEmptyChart(canvasId, text) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const { ctx, width, height } = setupCanvas(canvas);
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#0a0e13";
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = "#8fa0b8";
+  ctx.font = "13px system-ui";
+  ctx.fillText(text, 18, height / 2);
+}
+
+function drawGrid(ctx, width, height, pad) {
+  ctx.strokeStyle = "rgba(143,160,184,0.14)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (height - pad.top - pad.bottom) * i / 4;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(width - pad.right, y);
+    ctx.stroke();
+  }
+  for (let i = 0; i <= 6; i++) {
+    const x = pad.left + (width - pad.left - pad.right) * i / 6;
+    ctx.beginPath();
+    ctx.moveTo(x, pad.top);
+    ctx.lineTo(x, height - pad.bottom);
+    ctx.stroke();
+  }
+}
+
+function makeScale(values, minPad = 0.06) {
+  const nums = values.filter((v) => Number.isFinite(v));
+  if (!nums.length) return { min: 0, max: 1 };
+  let min = Math.min(...nums);
+  let max = Math.max(...nums);
+  if (min === max) {
+    min -= Math.abs(min || 1) * 0.01;
+    max += Math.abs(max || 1) * 0.01;
+  }
+  const pad = (max - min) * minPad;
+  return { min: min - pad, max: max + pad };
+}
+
+function mapPoint(index, value, total, scale, width, height, pad) {
+  const xSpan = width - pad.left - pad.right;
+  const ySpan = height - pad.top - pad.bottom;
+  const x = pad.left + (total <= 1 ? xSpan : xSpan * index / (total - 1));
+  const y = height - pad.bottom - ((value - scale.min) / (scale.max - scale.min)) * ySpan;
+  return { x, y };
+}
+
+function drawLine(ctx, rows, key, color, width, height, pad, scale) {
+  if (!rows.length) return;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  rows.forEach((row, idx) => {
+    const value = Number(row[key]);
+    const pt = mapPoint(idx, value, rows.length, scale, width, height, pad);
+    if (idx === 0) ctx.moveTo(pt.x, pt.y);
+    else ctx.lineTo(pt.x, pt.y);
+  });
+  ctx.stroke();
+}
+
+function drawAxisLabels(ctx, scale, width, height, pad) {
+  ctx.fillStyle = "#8fa0b8";
+  ctx.font = "11px system-ui";
+  ctx.textAlign = "right";
+  ctx.fillText(fmtNum(scale.max), width - 8, pad.top + 4);
+  ctx.fillText(fmtNum(scale.min), width - 8, height - pad.bottom);
+}
+
+function drawPriceChart(chartData) {
+  const bars = chartData.market_bars || [];
+  if (!bars.length) {
+    drawEmptyChart("paper-price-chart", "尚無價格資料，請先執行 python main.py");
+    return;
+  }
+  const canvas = document.getElementById("paper-price-chart");
+  const { ctx, width, height } = setupCanvas(canvas);
+  const pad = { left: 12, right: 68, top: 18, bottom: 24 };
+  const closes = bars.map((b) => Number(b.close));
+  const scale = makeScale(closes);
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#0a0e13";
+  ctx.fillRect(0, 0, width, height);
+  drawGrid(ctx, width, height, pad);
+  drawLine(ctx, bars, "close", "#4d9dff", width, height, pad, scale);
+  drawAxisLabels(ctx, scale, width, height, pad);
+
+  const byTime = new Map(bars.map((b, idx) => [String(b.timestamp).slice(0, 16), idx]));
+  const drawMarker = (timestamp, price, side, size, hollow = false) => {
+    const idx = byTime.get(String(timestamp).slice(0, 16));
+    if (idx == null) return;
+    const pt = mapPoint(idx, Number(price), bars.length, scale, width, height, pad);
+    const isBuy = String(side).toUpperCase().includes("BUY");
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, size, 0, Math.PI * 2);
+    ctx.fillStyle = isBuy ? "#2ecc87" : "#ff6b6b";
+    ctx.strokeStyle = ctx.fillStyle;
+    if (hollow) {
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    } else {
+      ctx.globalAlpha = 0.85;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  };
+
+  (chartData.signals || []).forEach((s) => {
+    if (s.signal_type === "BUY" || s.signal_type === "SELL") {
+      drawMarker(s.timestamp, s.price, s.signal_type, 4, false);
+    }
+  });
+  (chartData.fills || []).forEach((f) => drawMarker(f.timestamp, f.fill_price, f.side, 6, true));
+}
+
+function drawEquityChart(chartData, initialCash) {
+  const rows = chartData.equity_curve || [];
+  if (!rows.length) {
+    drawEmptyChart("paper-equity-chart", "尚無淨值資料，請先執行 python main.py");
+    return;
+  }
+  const canvas = document.getElementById("paper-equity-chart");
+  const { ctx, width, height } = setupCanvas(canvas);
+  const pad = { left: 12, right: 78, top: 18, bottom: 24 };
+  const enriched = rows.map((r) => ({
+    ...r,
+    total_pnl: Number(r.equity) - Number(initialCash || 0),
+  }));
+  const scale = makeScale([
+    ...enriched.map((r) => Number(r.equity)),
+    ...enriched.map((r) => Number(initialCash || 0)),
+  ]);
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#0a0e13";
+  ctx.fillRect(0, 0, width, height);
+  drawGrid(ctx, width, height, pad);
+  drawLine(ctx, enriched, "equity", "#b794ff", width, height, pad, scale);
+
+  const initialLine = Number(initialCash || 0);
+  if (initialLine > 0) {
+    const p0 = mapPoint(0, initialLine, enriched.length, scale, width, height, pad);
+    const p1 = mapPoint(enriched.length - 1, initialLine, enriched.length, scale, width, height, pad);
+    ctx.strokeStyle = "rgba(143,160,184,0.45)";
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(p0.x, p0.y);
+    ctx.lineTo(p1.x, p1.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  drawAxisLabels(ctx, scale, width, height, pad);
+
+  const last = enriched[enriched.length - 1];
+  ctx.fillStyle = Number(last.total_pnl) >= 0 ? "#2ecc87" : "#ff6b6b";
+  ctx.font = "12px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText(`PnL ${Number(last.total_pnl) >= 0 ? "+" : ""}${fmtNum(last.total_pnl)}`, pad.left, pad.top + 4);
+}
+
 function renderPaperTrading(data) {
   const status = data.status || {};
   const summary = data.summary || {};
   const cfg = status.config || {};
+  const charts = data.charts || {};
 
   document.getElementById("paper-meta").innerHTML =
     `${cfg.symbol || "—"} · ${cfg.provider || "—"} · ${cfg.strategy || "—"} · ${cfg.base_currency || "USDT"}`;
@@ -150,6 +331,8 @@ function renderPaperTrading(data) {
   const summaryEl = document.getElementById("paper-summary");
   if (!status.has_data) {
     summaryEl.innerHTML = `<div class="empty">尚無模擬交易資料。請在專案根目錄執行：<code>PAPER_DEMO=1 PAPER_DATA_PROVIDER=mock python main.py</code></div>`;
+    drawEmptyChart("paper-price-chart", "尚無價格資料，請先執行 python main.py");
+    drawEmptyChart("paper-equity-chart", "尚無淨值資料，請先執行 python main.py");
   } else {
     const cards = [
       { label: "淨值", value: fmtNum(summary.equity) },
@@ -164,6 +347,8 @@ function renderPaperTrading(data) {
     summaryEl.innerHTML = cards.map((c) => `
       <div class="summary-card"><div class="label">${c.label}</div><div class="value">${c.value}</div></div>
     `).join("");
+    drawPriceChart(charts);
+    drawEquityChart(charts, summary.initial_cash);
   }
 
   const positions = (data.snapshot && data.snapshot.positions) || [];
