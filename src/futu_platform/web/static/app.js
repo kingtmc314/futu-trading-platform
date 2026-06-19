@@ -496,3 +496,31 @@ loadStrategies();
 setInterval(refreshHealth, 20000);
 setInterval(refreshOverview, 45000);
 setInterval(refreshPaperTrading, 15000);
+
+
+function activateSection(sectionId) {
+  document.querySelectorAll('.workspace-section').forEach((section) => {
+    section.classList.toggle('active', section.id === sectionId);
+  });
+  document.querySelectorAll('.nav-item').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.section === sectionId);
+  });
+  if (sectionId === 'paper-trading-section') {
+    setTimeout(refreshPaperTrading, 50);
+  }
+}
+
+function initNavigation() {
+  document.querySelectorAll('.nav-item').forEach((btn) => {
+    btn.addEventListener('click', () => activateSection(btn.dataset.section));
+  });
+}
+
+window.addEventListener('resize', () => {
+  const paperSection = document.getElementById('paper-trading-section');
+  if (paperSection && paperSection.classList.contains('active')) {
+    refreshPaperTrading();
+  }
+});
+
+initNavigation();

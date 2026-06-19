@@ -3,145 +3,198 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Futu 交易平台</title>
+  <title>Futu Pro Trading Workstation</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <h1>Futu 交易平台</h1>
-      <p class="subtitle">模擬與實盤並存 · 同一 OpenD 連線</p>
-    </div>
-    <div class="header-actions">
-      <div id="health" class="badge">檢查中…</div>
-      <button class="secondary" onclick="refreshAll()">全部刷新</button>
-    </div>
-  </header>
-
-  <section class="quote-bar card">
-    <h2>行情快照</h2>
-    <div class="row">
-      <input id="quote-codes" value="HK.00700,US.AAPL" />
-      <button onclick="loadSnapshot()">查詢</button>
-    </div>
-    <div id="snapshot-table" class="table-wrap"></div>
-  </section>
-
-  <div class="dual-grid">
-    <section class="env-panel simulate" id="panel-simulate">
-      <div class="panel-head">
-        <h2>模擬交易</h2>
-        <span class="env-tag">SIMULATE</span>
+  <div class="terminal-shell">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo-mark">FT</div>
+        <div>
+          <h1>Futu Pro</h1>
+          <p>Trading Workstation</p>
+        </div>
       </div>
-      <div id="sim-summary" class="summary-cards"></div>
-      <h3>持倉</h3>
-      <div id="sim-portfolio" class="table-wrap"></div>
-      <h3>今日訂單</h3>
-      <div id="sim-orders" class="table-wrap"></div>
-      <h3>快速下單</h3>
-      <form class="order-form" onsubmit="return submitOrder(event, 'SIMULATE')">
-        <input name="code" value="HK.00700" required />
-        <select name="side"><option value="BUY">買入</option><option value="SELL">賣出</option></select>
-        <input name="quantity" type="number" value="100" min="1" required />
-        <select name="order_type"><option value="MARKET">市價</option><option value="NORMAL">限價</option></select>
-        <input name="price" type="number" step="0.01" placeholder="限價" />
-        <button type="submit">模擬下單</button>
-      </form>
-      <pre id="sim-order-result" class="result"></pre>
-    </section>
-
-    <section class="env-panel real" id="panel-real">
-      <div class="panel-head">
-        <h2>實盤交易</h2>
-        <span class="env-tag danger">REAL</span>
+      <nav class="side-nav" aria-label="Primary">
+        <button class="nav-item active" data-section="overview-section"><span>01</span>總覽</button>
+        <button class="nav-item" data-section="trade-section"><span>02</span>交易</button>
+        <button class="nav-item" data-section="paper-trading-section"><span>03</span>程式模擬</button>
+        <button class="nav-item" data-section="strategy-section"><span>04</span>策略</button>
+      </nav>
+      <div class="sidebar-card">
+        <div class="sidebar-card-label">OpenD</div>
+        <div id="health" class="badge">檢查中…</div>
       </div>
-      <p class="real-warning">實盤涉及真實資金。請先在 OpenD 解鎖交易，下單前需勾選確認。</p>
-      <div id="risk-summary" class="risk-box"></div>
-      <div id="real-summary" class="summary-cards"></div>
-      <h3>持倉</h3>
-      <div id="real-portfolio" class="table-wrap"></div>
-      <h3>今日訂單</h3>
-      <div id="real-orders" class="table-wrap"></div>
-      <h3>快速下單</h3>
-      <form class="order-form" onsubmit="return submitOrder(event, 'REAL')">
-        <input name="code" value="HK.00700" required />
-        <select name="side"><option value="BUY">買入</option><option value="SELL">賣出</option></select>
-        <input name="quantity" type="number" value="100" min="1" required />
-        <select name="order_type"><option value="MARKET">市價</option><option value="NORMAL">限價</option></select>
-        <input name="price" type="number" step="0.01" placeholder="限價" />
-        <label class="confirm-check"><input type="checkbox" name="confirmed" /> 我確認實盤下單</label>
-        <button type="submit" class="danger-btn">實盤下單</button>
-      </form>
-      <pre id="real-order-result" class="result"></pre>
-    </section>
+      <div class="sidebar-card compact">
+        <div class="sidebar-card-label">Refresh</div>
+        <button class="secondary full" onclick="refreshAll()">全部刷新</button>
+      </div>
+    </aside>
+
+    <main class="workstation">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Live / Paper / Strategy</p>
+          <h2>專業交易控制台</h2>
+        </div>
+        <div class="topbar-actions">
+          <div class="market-search">
+            <input id="quote-codes" value="HK.00700,US.AAPL" aria-label="Quote symbols" />
+            <button onclick="loadSnapshot()">更新行情</button>
+          </div>
+          <span class="status-pill">SIM + REAL</span>
+        </div>
+      </header>
+
+      <section class="workspace-section active" id="overview-section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Market Monitor</p>
+            <h3>行情快照</h3>
+          </div>
+          <span class="section-hint">輸入多個代碼以逗號分隔</span>
+        </div>
+        <div class="pro-card quote-card">
+          <div id="snapshot-table" class="table-wrap tall"></div>
+        </div>
+      </section>
+
+      <section class="workspace-section" id="trade-section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Execution Desk</p>
+            <h3>模擬 / 實盤交易</h3>
+          </div>
+          <span class="section-hint">實盤預設受風控閘門保護</span>
+        </div>
+        <div class="trade-layout">
+          <section class="env-panel simulate" id="panel-simulate">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Account</p>
+                <h2>模擬交易</h2>
+              </div>
+              <span class="env-tag">SIMULATE</span>
+            </div>
+            <div id="sim-summary" class="summary-cards terminal-cards"></div>
+            <div class="panel-tabs">
+              <div>
+                <h3>持倉</h3>
+                <div id="sim-portfolio" class="table-wrap"></div>
+              </div>
+              <div>
+                <h3>今日訂單</h3>
+                <div id="sim-orders" class="table-wrap"></div>
+              </div>
+            </div>
+            <h3>快速下單</h3>
+            <form class="order-ticket" onsubmit="return submitOrder(event, 'SIMULATE')">
+              <label>代碼<input name="code" value="HK.00700" required /></label>
+              <label>方向<select name="side"><option value="BUY">買入</option><option value="SELL">賣出</option></select></label>
+              <label>數量<input name="quantity" type="number" value="100" min="1" required /></label>
+              <label>類型<select name="order_type"><option value="MARKET">市價</option><option value="NORMAL">限價</option></select></label>
+              <label>限價<input name="price" type="number" step="0.01" placeholder="可留空" /></label>
+              <button type="submit">提交模擬單</button>
+            </form>
+            <pre id="sim-order-result" class="result"></pre>
+          </section>
+
+          <section class="env-panel real" id="panel-real">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Protected Account</p>
+                <h2>實盤交易</h2>
+              </div>
+              <span class="env-tag danger">REAL</span>
+            </div>
+            <p class="real-warning">實盤涉及真實資金。請先在 OpenD 解鎖交易，下單前需勾選確認。</p>
+            <div id="risk-summary" class="risk-box"></div>
+            <div id="real-summary" class="summary-cards terminal-cards"></div>
+            <div class="panel-tabs">
+              <div>
+                <h3>持倉</h3>
+                <div id="real-portfolio" class="table-wrap"></div>
+              </div>
+              <div>
+                <h3>今日訂單</h3>
+                <div id="real-orders" class="table-wrap"></div>
+              </div>
+            </div>
+            <h3>實盤下單</h3>
+            <form class="order-ticket real-ticket" onsubmit="return submitOrder(event, 'REAL')">
+              <label>代碼<input name="code" value="HK.00700" required /></label>
+              <label>方向<select name="side"><option value="BUY">買入</option><option value="SELL">賣出</option></select></label>
+              <label>數量<input name="quantity" type="number" value="100" min="1" required /></label>
+              <label>類型<select name="order_type"><option value="MARKET">市價</option><option value="NORMAL">限價</option></select></label>
+              <label>限價<input name="price" type="number" step="0.01" placeholder="限價建議必填" /></label>
+              <label class="confirm-check"><input type="checkbox" name="confirmed" /> 我確認實盤下單</label>
+              <button type="submit" class="danger-btn">送出實盤單</button>
+            </form>
+            <pre id="real-order-result" class="result"></pre>
+          </section>
+        </div>
+      </section>
+
+      <section class="workspace-section paper-section" id="paper-trading-section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Algorithmic Paper Trading</p>
+            <h3>程式模擬交易</h3>
+            <p class="paper-subtitle" id="paper-meta">讀取本地 SQLite · 執行 <code>python main.py</code> 後自動更新</p>
+          </div>
+          <div class="paper-head-actions">
+            <span id="paper-status-badge" class="env-tag paper-tag">PAPER</span>
+            <span id="paper-run-badge" class="badge">—</span>
+          </div>
+        </div>
+        <div id="paper-summary" class="summary-cards paper-summary"></div>
+        <div class="chart-grid pro-charts">
+          <div class="chart-card primary-chart">
+            <div class="chart-title">
+              <span>價格走勢 + 信號/成交</span>
+              <span class="chart-legend"><i class="legend-dot buy"></i>BUY <i class="legend-dot sell"></i>SELL</span>
+            </div>
+            <canvas id="paper-price-chart" height="340"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">
+              <span>淨值 / PnL 曲線</span>
+              <span class="chart-legend"><i class="legend-line equity"></i>Equity <i class="legend-line pnl"></i>PnL</span>
+            </div>
+            <canvas id="paper-equity-chart" height="340"></canvas>
+          </div>
+        </div>
+        <div class="paper-grid data-grid">
+          <div class="pro-card"><h3>持倉</h3><div id="paper-positions" class="table-wrap"></div></div>
+          <div class="pro-card"><h3>成交紀錄</h3><div id="paper-fills" class="table-wrap"></div></div>
+        </div>
+        <div class="pro-card"><h3>最近信號</h3><div id="paper-signals" class="table-wrap"></div></div>
+      </section>
+
+      <section class="workspace-section strategy-section" id="strategy-section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Strategy Control</p>
+            <h3>策略執行</h3>
+          </div>
+          <span class="section-hint">先用模擬環境驗證，再切換實盤</span>
+        </div>
+        <div class="pro-card strategy-card">
+          <div class="strategy-ticket">
+            <label>策略<select id="strategy-name"></select></label>
+            <label>環境<select id="strategy-env"><option value="SIMULATE">模擬</option><option value="REAL">實盤</option></select></label>
+            <label>代碼<input id="strategy-code" value="HK.00700" /></label>
+            <label>數量<input id="strategy-qty" type="number" value="100" /></label>
+            <label class="check-line"><input type="checkbox" id="strategy-auto" /> 自動下單</label>
+            <label id="strategy-confirm-wrap" class="check-line" style="display:none"><input type="checkbox" id="strategy-confirmed" /> 實盤確認</label>
+            <button onclick="runStrategy()">執行一次</button>
+          </div>
+          <pre id="strategy-out" class="result">—</pre>
+        </div>
+      </section>
+    </main>
   </div>
-
-  <section class="card wide paper-section" id="paper-trading-section">
-    <div class="panel-head">
-      <div>
-        <h2>程式模擬交易</h2>
-        <p class="paper-subtitle" id="paper-meta">讀取本地 SQLite · 執行 <code>python main.py</code> 後自動更新</p>
-      </div>
-      <div class="paper-head-actions">
-        <span id="paper-status-badge" class="env-tag paper-tag">PAPER</span>
-        <span id="paper-run-badge" class="badge">—</span>
-      </div>
-    </div>
-    <div id="paper-summary" class="summary-cards paper-summary"></div>
-    <div class="chart-grid">
-      <div class="chart-card">
-        <div class="chart-title">
-          <span>價格走勢 + 信號/成交</span>
-          <span class="chart-legend">
-            <i class="legend-dot buy"></i>BUY
-            <i class="legend-dot sell"></i>SELL
-          </span>
-        </div>
-        <canvas id="paper-price-chart" height="260"></canvas>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">
-          <span>淨值 / PnL 曲線</span>
-          <span class="chart-legend">
-            <i class="legend-line equity"></i>Equity
-            <i class="legend-line pnl"></i>PnL
-          </span>
-        </div>
-        <canvas id="paper-equity-chart" height="260"></canvas>
-      </div>
-    </div>
-    <div class="paper-grid">
-      <div>
-        <h3>持倉</h3>
-        <div id="paper-positions" class="table-wrap"></div>
-      </div>
-      <div>
-        <h3>成交紀錄</h3>
-        <div id="paper-fills" class="table-wrap"></div>
-      </div>
-    </div>
-    <h3>最近信號</h3>
-    <div id="paper-signals" class="table-wrap"></div>
-  </section>
-
-  <section class="card wide strategy-section">
-    <h2>策略執行</h2>
-    <div class="form">
-      <select id="strategy-name"></select>
-      <select id="strategy-env">
-        <option value="SIMULATE">模擬</option>
-        <option value="REAL">實盤</option>
-      </select>
-      <input id="strategy-code" value="HK.00700" />
-      <input id="strategy-qty" type="number" value="100" />
-      <label><input type="checkbox" id="strategy-auto" /> 自動下單</label>
-      <label id="strategy-confirm-wrap" style="display:none">
-        <input type="checkbox" id="strategy-confirmed" /> 實盤確認
-      </label>
-      <button onclick="runStrategy()">執行一次</button>
-    </div>
-    <pre id="strategy-out" class="result">—</pre>
-  </section>
 
   <script src="/static/app.js"></script>
 </body>
