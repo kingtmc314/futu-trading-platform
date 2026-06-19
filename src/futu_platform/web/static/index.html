@@ -75,6 +75,32 @@
     </section>
   </div>
 
+  <section class="card wide paper-section" id="paper-trading-section">
+    <div class="panel-head">
+      <div>
+        <h2>程式模擬交易</h2>
+        <p class="paper-subtitle" id="paper-meta">讀取本地 SQLite · 執行 <code>python main.py</code> 後自動更新</p>
+      </div>
+      <div class="paper-head-actions">
+        <span id="paper-status-badge" class="env-tag paper-tag">PAPER</span>
+        <span id="paper-run-badge" class="badge">—</span>
+      </div>
+    </div>
+    <div id="paper-summary" class="summary-cards paper-summary"></div>
+    <div class="paper-grid">
+      <div>
+        <h3>持倉</h3>
+        <div id="paper-positions" class="table-wrap"></div>
+      </div>
+      <div>
+        <h3>成交紀錄</h3>
+        <div id="paper-fills" class="table-wrap"></div>
+      </div>
+    </div>
+    <h3>最近信號</h3>
+    <div id="paper-signals" class="table-wrap"></div>
+  </section>
+
   <section class="card wide strategy-section">
     <h2>策略執行</h2>
     <div class="form">

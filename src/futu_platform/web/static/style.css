@@ -89,3 +89,20 @@ tr:hover td { background: rgba(255,255,255,.02); }
 
 .side-buy { color: var(--sim); font-weight: 600; }
 .side-sell { color: var(--real); font-weight: 600; }
+
+.paper-section { margin: 1rem 1.5rem 0; border-color: rgba(155, 124, 255, 0.35); }
+.paper-tag { background: rgba(155, 124, 255, 0.12); color: #b794ff; }
+.paper-subtitle { margin: 0.25rem 0 0; font-size: 0.82rem; color: var(--muted); }
+.paper-subtitle code { font-size: 0.78rem; color: #cbd5e1; }
+.paper-head-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.paper-summary { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 960px) { .paper-summary { grid-template-columns: repeat(2, 1fr); } }
+.paper-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;
+}
+@media (max-width: 960px) { .paper-grid { grid-template-columns: 1fr; } }
+.pnl-pos { color: var(--sim); }
+.pnl-neg { color: var(--real); }
+.signal-buy { color: var(--sim); font-weight: 600; }
+.signal-sell { color: var(--real); font-weight: 600; }
+.signal-hold { color: var(--muted); }

@@ -14,6 +14,10 @@ PAPER_DEMO=1 PAPER_DATA_PROVIDER=mock python main.py
 
 # 24 小時 Binance 真實報價模擬
 PAPER_DATA_PROVIDER=binance python main.py
+
+# 在 Web 控制台查看結果（唯讀，讀取 SQLite）
+futu-trade serve
+# 瀏覽 http://127.0.0.1:8080 →「程式模擬交易」區塊，每 15 秒自動刷新
 ```
 
 ## 功能
@@ -101,6 +105,12 @@ futu-trading-platform/
 | POST | `/api/trade/order` | 下單 |
 | GET | `/api/strategy/run?strategy=ma_cross&code=HK.00700` | 執行策略 |
 | POST | `/api/strategy/schedule` | 定時策略 |
+| GET | `/api/paper-trading/overview` | 程式模擬交易總覽（淨值/持倉/成交/信號） |
+| GET | `/api/paper-trading/snapshot` | 最新組合快照 |
+| GET | `/api/paper-trading/fills` | 成交紀錄 |
+| GET | `/api/paper-trading/signals` | 最近信號 |
+| GET | `/api/paper-trading/summary` | 損益摘要 |
+| GET | `/api/paper-trading/status` | 運行狀態 |
 
 ## 安全提示
 

@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from ..client import FutuClient
 from ..config import get_settings
+from ..paper_trading_service import PaperTradingService
 from ..quote_service import QuoteService
 from ..runner import StrategyRunner
 from ..strategy import create_engine
@@ -24,6 +25,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 quote_service = QuoteService()
 trade_service = TradeService()
+paper_trading_service = PaperTradingService()
 strategy_engine = create_engine()
 strategy_runner = StrategyRunner()
 
@@ -232,6 +234,59 @@ def api_unschedule(job_id: str) -> dict:
     if not ok:
         raise HTTPException(status_code=404, detail="任務不存在")
     return {"status": "removed", "job_id": job_id}
+
+
+@app.get("/api/paper-trading/overview")
+def api_paper_overview() -> dict:
+    try:
+        return paper_trading_service.overview()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/paper-trading/snapshot")
+def api_paper_snapshot() -> dict:
+    try:
+        data = paper_trading_service.snapshot()
+        if data is None:
+            return {"data": None, "message": "尚無快照資料，請先執行 python main.py"}
+        return {"data": data}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/paper-trading/fills")
+def api_paper_fills(limit: int = Query(100, ge=1, le=500)) -> dict:
+    try:
+        return {"data": paper_trading_service.fills(limit=limit)}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/paper-trading/signals")
+def api_paper_signals(limit: int = Query(50, ge=1, le=200)) -> dict:
+    try:
+        return {"data": paper_trading_service.signals(limit=limit)}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/paper-trading/summary")
+def api_paper_summary() -> dict:
+    try:
+        return {"data": paper_trading_service.summary()}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/paper-trading/status")
+def api_paper_status() -> dict:
+    try:
+        return {"data": paper_trading_service.status()}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 def create_app() -> FastAPI:
